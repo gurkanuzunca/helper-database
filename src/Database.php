@@ -3,8 +3,14 @@ namespace Gurkan\Helper;
 
 use PDO;
 use PDOException;
-use PDOStatement;
 
+/**
+ * Class Database
+ * Sınıf özellikleri için beklentiye girmemek lazım.
+ * Şipşak, basit işlemler ve denemeler için kullanılabilir.
+ *
+ * @package Gurkan\Helper
+ */
 class Database
 {
     /**
@@ -12,11 +18,14 @@ class Database
      */
     private static $connection;
 
-
     /**
      * Veritabanı bağlantınısı sağlar.
+     *
+     * @param array $config ['host' => 'localhost', 'database' => 'db', 'charset' => 'utf8', 'username' => 'user', 'password' => 'pass']
+     *
+     * @return void
      */
-    public static function connect($config)
+    public static function connect(array $config)
     {
         try {
             static::$connection = new PDO('mysql:host='. $config['host'] .';dbname='. $config['database'] .';charset='. $config['charset'], $config['username'], $config['password']);
@@ -26,15 +35,14 @@ class Database
         }
     }
 
-
     /**
      * Veritabanı sorgusu yapar.
      *
      * @param string $sql
      * @param array $parameters
      *
-     * @example DB::query('SELECT * FROM table WHERE id = :id, name = :name', array(':id' => 1, ':name' => 'Name');
-     * @return bool|PDOStatement
+     * @example Database::query('SELECT * FROM table WHERE id = :id, name = :name', [':id' => 1, ':name' => 'Name'];
+     * @return bool|\PDOStatement
      */
     public static function query($sql, $parameters = array())
     {
@@ -50,7 +58,6 @@ class Database
         return false;
     }
 
-
     /**
      * Sorgu yapıp tüm kayıtları döndürür.
      *
@@ -64,7 +71,6 @@ class Database
 
         return $query->fetchAll();
     }
-
 
     /**
      * Sorgu yapıp ilk kaydı döndürür.
@@ -80,7 +86,6 @@ class Database
         return $query->fetch();
     }
 
-
     /**
      * Kolay select sorgusu.
      *
@@ -91,9 +96,8 @@ class Database
      */
     public static function find($table, $value, $column = 'id')
     {
-        return static::fetch('SELECT * FROM '. $table .' WHERE '. $column .' = :'. $column .' LIMIT 1', array(":$column" => $value));
+        return static::fetch('SELECT * FROM '. $table .' WHERE '. $column .' = :'. $column .' LIMIT 1', [":$column" => $value]);
     }
-
 
     /**
      * Kolay count sorgusu.
@@ -133,7 +137,6 @@ class Database
         return false;
     }
 
-
     /**
      * Kolay update sorgusu.
      *
@@ -168,7 +171,6 @@ class Database
         return $query->rowCount();
     }
 
-
     /**
      * Parametreleri insert ve update için hazırlar.
      *
@@ -177,12 +179,22 @@ class Database
      */
     private static function parameterForSets(array $parameters)
     {
-        $sets = array();
+        $sets = [];
 
         foreach ($parameters as $key => $value) {
             $sets[] = ltrim($key, ':') .' = '. $key;
         }
 
         return implode(',', $sets);
+    }
+
+    /**
+     * PDO gereksinimleri için PDO nesnesini döndürür.
+     *
+     * @return PDO
+     */
+    public function getConnection()
+    {
+        return static::$connection;
     }
 }
