@@ -1,0 +1,23 @@
+{
+  "name": "gurkanuzunca/helper-database",
+  "description": "Yardımcı veritabanı kütüphanesi",
+  "keywords": ["helper","simple","database","micro"],
+  "homepage": "https://github.com/gurkanuzunca/helper-database",
+  "type": "library",
+  "license": "Apache License 2.0",
+  "authors": [
+    {
+      "name": "Gürkan Uzunca",
+      "email": "selam@gurkanuzunca.com",
+      "homepage": "http://gurkanuzunca.com"
+    }
+  ],
+  "require": {
+    "php": ">=5.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "Gurkan\\Helper\\": "src/"
+    }
+  }
+}
