@@ -16,20 +16,30 @@ class Database
     /**
      * @var PDO
      */
-    private static $connection;
+    private $connection;
+
+    /**
+     * Database constructor.
+     * @param array $config
+     */
+    public function __construct(array $config)
+    {
+        $this->connect($config);
+    }
 
     /**
      * Veritabanı bağlantınısı sağlar.
      *
      * @param array $config ['host' => 'localhost', 'database' => 'db', 'charset' => 'utf8', 'username' => 'user', 'password' => 'pass']
-     *
      * @return void
      */
-    public static function connect(array $config)
+    public function connect(array $config)
     {
         try {
-            static::$connection = new PDO('mysql:host='. $config['host'] .';dbname='. $config['database'] .';charset='. $config['charset'], $config['username'], $config['password']);
-
+            $this->connection = new PDO('mysql:host='. $config['host'] .';dbname='. $config['database'] .';charset='. $config['charset'], $config['username'], $config['password'], [
+                PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+                PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ
+            ]);
         } catch (PDOException $e){
             echo $e->getMessage();
         }
@@ -44,11 +54,9 @@ class Database
      * @example Database::query('SELECT * FROM table WHERE id = :id, name = :name', [':id' => 1, ':name' => 'Name'];
      * @return bool|\PDOStatement
      */
-    public static function query($sql, $parameters = array())
+    public function query($sql, $parameters = array())
     {
-        $query = static::$connection->prepare($sql);
-        $query->setFetchMode(PDO::FETCH_OBJ);
-
+        $query = $this->connection->prepare($sql);
         $success = $query->execute($parameters);
 
         if ($success === true) {
@@ -65,9 +73,9 @@ class Database
      * @param array $parameters
      * @return array
      */
-    public static function fetchAll($sql, $parameters = array())
+    public function fetchAll($sql, $parameters = array())
     {
-        $query = static::query($sql, $parameters);
+        $query = $this->query($sql, $parameters);
 
         return $query->fetchAll();
     }
@@ -79,9 +87,9 @@ class Database
      * @param array $parameters
      * @return mixed
      */
-    public static function fetch($sql, $parameters = array())
+    public function fetch($sql, $parameters = array())
     {
-        $query = static::query($sql, $parameters);
+        $query = $this->query($sql, $parameters);
 
         return $query->fetch();
     }
@@ -94,9 +102,9 @@ class Database
      * @param string $column
      * @return mixed
      */
-    public static function find($table, $value, $column = 'id')
+    public function find($table, $value, $column = 'id')
     {
-        return static::fetch('SELECT * FROM '. $table .' WHERE '. $column .' = :'. $column .' LIMIT 1', [":$column" => $value]);
+        return $this->fetch('SELECT * FROM '. $table .' WHERE '. $column .' = :'. $column .' LIMIT 1', [":$column" => $value]);
     }
 
     /**
@@ -106,15 +114,15 @@ class Database
      * @param array $parameters
      * @return string
      */
-    public static function count($table, $parameters = array())
+    public function count($table, $parameters = array())
     {
         $where = '';
 
         if (count($parameters)> 0) {
-            $where = ' WHERE '. static::parameterForSets($parameters);
+            $where = ' WHERE '. $this->parameterForSets($parameters);
         }
 
-        $query = static::query('SELECT count(*) as aggregate FROM '. $table . $where, $parameters);
+        $query = $this->query('SELECT count(*) as aggregate FROM '. $table . $where, $parameters);
 
         return $query->fetchColumn();
     }
@@ -126,12 +134,12 @@ class Database
      * @param array $parameters
      * @return bool|string
      */
-    public static function insert($table, $parameters = array())
+    public function insert($table, $parameters = array())
     {
-        $query = static::query('INSERT INTO '. $table .' SET '. static::parameterForSets($parameters), $parameters);
+        $query = $this->query('INSERT INTO '. $table .' SET '. $this->parameterForSets($parameters), $parameters);
 
         if ($query->rowCount() > 0) {
-            return static::$connection->lastInsertId();
+            return $this->connection->lastInsertId();
         }
 
         return false;
@@ -144,9 +152,9 @@ class Database
      * @param array $parameters
      * @return int
      */
-    public static function update($table, $parameters = array())
+    public function update($table, $parameters = array())
     {
-        $query = static::query('UPDATE '. $table .' SET '. static::parameterForSets($parameters), $parameters);
+        $query = $this->query('UPDATE '. $table .' SET '. $this->parameterForSets($parameters), $parameters);
 
         return $query->rowCount();
     }
@@ -158,15 +166,15 @@ class Database
      * @param array $parameters
      * @return int
      */
-    public static function delete($table, $parameters = array())
+    public function delete($table, $parameters = array())
     {
         $where = '';
 
         if (count($parameters)> 0) {
-            $where = ' WHERE '. static::parameterForSets($parameters);
+            $where = ' WHERE '. $this->parameterForSets($parameters);
         }
 
-        $query = static::query('UPDATE FROM '. $table . $where, $parameters);
+        $query = $this->query('UPDATE FROM '. $table . $where, $parameters);
 
         return $query->rowCount();
     }
@@ -177,7 +185,7 @@ class Database
      * @param array $parameters
      * @return string
      */
-    private static function parameterForSets(array $parameters)
+    private function parameterForSets(array $parameters)
     {
         $sets = [];
 
@@ -195,6 +203,6 @@ class Database
      */
     public function getConnection()
     {
-        return static::$connection;
+        return $this->connection;
     }
 }
