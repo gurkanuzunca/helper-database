@@ -146,6 +146,26 @@ class Database
     }
 
     /**
+     * @param $table
+     * @param array $data
+     *
+     * @example Database::insertWithArray('table', ['id' => 1, 'name' => 'Name'];
+     *
+     * @return bool|string
+     */
+    public function insertWithArray($table, $data = array())
+    {
+        $parameters = array();
+
+        foreach ($data as $key => $value)
+        {
+            $parameters[':' . $key] = $value;
+        }
+
+        return $this->insert($table, $parameters);
+    }
+
+    /**
      * Kolay update sorgusu.
      *
      * @param string $table
@@ -157,6 +177,26 @@ class Database
         $query = $this->query('UPDATE '. $table .' SET '. $this->parameterForSets($parameters), $parameters);
 
         return $query->rowCount();
+    }
+    
+    /**
+     * @param $table
+     * @param array $data
+     *
+     * @example Database::updateWithArray('table', ['id' => 1, 'name' => 'Name'];
+     *
+     * @return bool|string
+     */
+    public function updateWithArray($table, $data = array())
+    {
+        $parameters = array();
+
+        foreach ($data as $key => $value)
+        {
+            $parameters[':' . $key] = $value;
+        }
+
+        return $this->update($table, $parameters);
     }
 
     /**
