@@ -214,7 +214,7 @@ class Database
             $where = ' WHERE '. $this->parameterForSets($parameters);
         }
 
-        $query = $this->query('UPDATE FROM '. $table . $where, $parameters);
+        $query = $this->query('DELETE FROM '. $table . $where, $parameters);
 
         return $query->rowCount();
     }
